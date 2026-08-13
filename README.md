@@ -10,9 +10,27 @@ The application exposes APIs to:
 - transfer funds between persisted customer accounts
 - retrieve a customer's current account balance
 
+## What You Need to Run This Project
+
+- Java 21
+- A reachable PostgreSQL instance
+- Database credentials configured through environment variables or matching the defaults below
+- Docker only if you want to start PostgreSQL with `docker compose`
+- Docker or another Testcontainers-compatible container runtime if you want to run the integration tests
+
+Default database settings:
+
+- `DB_HOST=localhost`
+- `DB_PORT=5432`
+- `DB_NAME=fund_transfer`
+- `DB_USERNAME=postgres`
+- `DB_PASSWORD=postgres`
+
+The application uses Flyway to create/update the schema at startup, so the main requirement is that PostgreSQL is running and the configured database is accessible.
+
 ## Reviewer Guide
 
-1. Start PostgreSQL with `docker compose up -d`.
+1. Make sure PostgreSQL is running and matches the configured `DB_*` settings.
 2. Start the application with `.\mvnw.cmd spring-boot:run`.
 3. Create and fund Alice and Bob through `POST /api/v1/customer-accounts` with `Idempotency-Key`.
 4. Transfer funds from Alice to Bob through `POST /api/v1/transfers` with `Idempotency-Key`.
@@ -37,6 +55,22 @@ The application exposes APIs to:
 - Source and destination accounts must be different.
 
 ## Running the Application
+
+Configure these environment variables first if you are not using the defaults:
+
+```bash
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=fund_transfer
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+```
+
+If you want a quick local PostgreSQL instance, you can use Docker Compose:
+
+```bash
+docker compose up -d
+```
 
 Windows:
 
@@ -66,7 +100,7 @@ Integration suite:
 .\mvnw.cmd test -Pintegration-test
 ```
 
-The integration profile requires Docker or another Testcontainers-compatible runtime.
+The integration profile uses Testcontainers and requires Docker or another Testcontainers-compatible container runtime.
 
 ## Sample Requests
 
