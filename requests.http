@@ -1,0 +1,130 @@
+### Create and fund Alice account
+POST http://localhost:8080/api/v1/customer-accounts
+Content-Type: application/json
+Idempotency-Key: idem-customer-001
+
+{
+  "customerId": "CUST-001",
+  "customerName": "Alice",
+  "accountNumber": "ACC001",
+  "transactionReference": "TXN-001",
+  "transactionAmount": 5000.00
+}
+
+### Create and fund Bob account
+POST http://localhost:8080/api/v1/customer-accounts
+Content-Type: application/json
+Idempotency-Key: idem-customer-002
+
+{
+  "customerId": "CUST-002",
+  "customerName": "Bob",
+  "accountNumber": "ACC002",
+  "transactionReference": "TXN-002",
+  "transactionAmount": 2000.00
+}
+
+### Transfer funds
+POST http://localhost:8080/api/v1/transfers
+Content-Type: application/json
+Idempotency-Key: idem-transfer-001
+
+{
+  "sourceAccountNumber": "ACC001",
+  "destinationAccountNumber": "ACC002",
+  "amount": 1000.00,
+  "transferReference": "TRF-001"
+}
+
+### Replay same account funding safely
+POST http://localhost:8080/api/v1/customer-accounts
+Content-Type: application/json
+Idempotency-Key: idem-customer-001
+
+{
+  "customerId": "CUST-001",
+  "customerName": "Alice",
+  "accountNumber": "ACC001",
+  "transactionReference": "TXN-001",
+  "transactionAmount": 5000.00
+}
+
+### Duplicate transfer reference
+POST http://localhost:8080/api/v1/transfers
+Content-Type: application/json
+Idempotency-Key: idem-transfer-002
+
+{
+  "sourceAccountNumber": "ACC001",
+  "destinationAccountNumber": "ACC002",
+  "amount": 500.00,
+  "transferReference": "TRF-001"
+}
+
+### Replay same transfer safely
+POST http://localhost:8080/api/v1/transfers
+Content-Type: application/json
+Idempotency-Key: idem-transfer-001
+
+{
+  "sourceAccountNumber": " acc001 ",
+  "destinationAccountNumber": " acc002 ",
+  "amount": 1000.0,
+  "transferReference": " trf-001 "
+}
+
+### Reuse transfer key with different payload
+POST http://localhost:8080/api/v1/transfers
+Content-Type: application/json
+Idempotency-Key: idem-transfer-001
+
+{
+  "sourceAccountNumber": "ACC001",
+  "destinationAccountNumber": "ACC002",
+  "amount": 500.00,
+  "transferReference": "TRF-003"
+}
+
+### Get Alice balance
+GET http://localhost:8080/api/v1/customer-accounts/ACC001/balance
+
+### Get Bob balance
+GET http://localhost:8080/api/v1/customer-accounts/ACC002/balance
+
+### Invalid account number
+POST http://localhost:8080/api/v1/customer-accounts
+Content-Type: application/json
+Idempotency-Key: idem-customer-003
+
+{
+  "customerId": "CUST-003",
+  "customerName": "Mallory",
+  "accountNumber": "ACC-003",
+  "transactionReference": "TXN-003",
+  "transactionAmount": 100.00
+}
+
+### Duplicate account number
+POST http://localhost:8080/api/v1/customer-accounts
+Content-Type: application/json
+Idempotency-Key: idem-customer-004
+
+{
+  "customerId": "CUST-004",
+  "customerName": "Alice Clone",
+  "accountNumber": "ACC001",
+  "transactionReference": "TXN-004",
+  "transactionAmount": 500.00
+}
+
+### Insufficient funds transfer
+POST http://localhost:8080/api/v1/transfers
+Content-Type: application/json
+Idempotency-Key: idem-transfer-004
+
+{
+  "sourceAccountNumber": "ACC001",
+  "destinationAccountNumber": "ACC002",
+  "amount": 6000.00,
+  "transferReference": "TRF-002"
+}

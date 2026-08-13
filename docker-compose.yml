@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fund-transfer-postgres
+    environment:
+      POSTGRES_DB: fund_transfer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - fund-transfer-data:/var/lib/postgresql/data
+
+volumes:
+  fund-transfer-data:

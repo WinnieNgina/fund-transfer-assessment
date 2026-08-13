@@ -1,0 +1,1394 @@
+{
+  "info": {
+    "_postman_id": "e5db2a95-65f8-4d06-b1ca-7d0c34a669af",
+    "name": "Fund Transfer Assessment",
+    "description": "Postman collection aligned with the current Spring Boot fund transfer API contract, including idempotency replay, validation failures, duplicate data conflicts, and missing-account scenarios.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Customer Accounts",
+      "description": "Endpoints for creating funded customer accounts and checking balances. POST requests require Idempotency-Key and return the shared API response envelope.",
+      "item": [
+        {
+          "name": "Create and Fund Alice Account",
+          "request": {
+            "method": "POST",
+            "description": "Creates a funded customer account. Expected result: 201 Created.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-001\",\n  \"customerName\": \"Alice\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 5000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-001\",\n  \"customerName\": \"Alice\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 5000.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Customer account created and funded successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"customerId\": \"CUST-001\",\n    \"customerName\": \"Alice\",\n    \"accountNumber\": \"ACC001\",\n    \"transactionReference\": \"TXN-001\",\n    \"transactionAmount\": 5000.00,\n    \"currentBalance\": 5000.00,\n    \"createdAt\": \"2026-08-04T02:30:00\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:30:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Replay Alice Account Funding",
+          "request": {
+            "method": "POST",
+            "description": "Replays the exact same request with the same Idempotency-Key. Expected result: 200 OK with the original payload.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-001\",\n  \"customerName\": \"Alice\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 5000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-001\",\n  \"customerName\": \"Alice\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 5000.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Customer account funding already processed for this idempotency key\",\n  \"data\": {\n    \"id\": 1,\n    \"customerId\": \"CUST-001\",\n    \"customerName\": \"Alice\",\n    \"accountNumber\": \"ACC001\",\n    \"transactionReference\": \"TXN-001\",\n    \"transactionAmount\": 5000.00,\n    \"currentBalance\": 5000.00,\n    \"createdAt\": \"2026-08-04T02:30:00\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:31:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create and Fund Bob Account",
+          "request": {
+            "method": "POST",
+            "description": "Creates a second funded account used by the transfer scenarios. Expected result: 201 Created.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-002"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-002\",\n  \"customerName\": \"Bob\",\n  \"accountNumber\": \"ACC002\",\n  \"transactionReference\": \"TXN-002\",\n  \"transactionAmount\": 2000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-002"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-002\",\n  \"customerName\": \"Bob\",\n  \"accountNumber\": \"ACC002\",\n  \"transactionReference\": \"TXN-002\",\n  \"transactionAmount\": 2000.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Customer account created and funded successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"customerId\": \"CUST-002\",\n    \"customerName\": \"Bob\",\n    \"accountNumber\": \"ACC002\",\n    \"transactionReference\": \"TXN-002\",\n    \"transactionAmount\": 2000.00,\n    \"currentBalance\": 2000.00,\n    \"createdAt\": \"2026-08-04T02:31:30\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:31:30+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reuse Key With Different Customer Payload",
+          "request": {
+            "method": "POST",
+            "description": "Reuses an Idempotency-Key with a different normalized request body. Expected result: 409 Conflict and IDEMPOTENCY_KEY_CONFLICT.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-099\",\n  \"customerName\": \"Alice Changed\",\n  \"accountNumber\": \"ACC099\",\n  \"transactionReference\": \"TXN-099\",\n  \"transactionAmount\": 100.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-099\",\n  \"customerName\": \"Alice Changed\",\n  \"accountNumber\": \"ACC099\",\n  \"transactionReference\": \"TXN-099\",\n  \"transactionAmount\": 100.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Idempotency key has already been used with a different request payload\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:32:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"IDEMPOTENCY_KEY_CONFLICT\",\n  \"correlationId\": \"corr-20260804-0001\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Missing Idempotency Key",
+          "request": {
+            "method": "POST",
+            "description": "Omits the required Idempotency-Key header. Expected result: 400 Bad Request and MISSING_IDEMPOTENCY_KEY.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-003\",\n  \"customerName\": \"Mallory\",\n  \"accountNumber\": \"ACC003\",\n  \"transactionReference\": \"TXN-003\",\n  \"transactionAmount\": 100.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Bad Request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-003\",\n  \"customerName\": \"Mallory\",\n  \"accountNumber\": \"ACC003\",\n  \"transactionReference\": \"TXN-003\",\n  \"transactionAmount\": 100.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Idempotency-Key header is required\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:33:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"MISSING_IDEMPOTENCY_KEY\",\n  \"correlationId\": \"corr-20260804-0002\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Overscale Funding Amount",
+          "request": {
+            "method": "POST",
+            "description": "Sends a funding amount with more than 2 decimal places. Expected result: 400 Bad Request and VALIDATION_ERROR.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-scale"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-004\",\n  \"customerName\": \"Scale Test\",\n  \"accountNumber\": \"ACC004\",\n  \"transactionReference\": \"TXN-SCALE\",\n  \"transactionAmount\": 10.999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-scale"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-004\",\n  \"customerName\": \"Scale Test\",\n  \"accountNumber\": \"ACC004\",\n  \"transactionReference\": \"TXN-SCALE\",\n  \"transactionAmount\": 10.999\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"field\": \"transactionAmount\",\n      \"message\": \"Transaction amount must have at most 2 decimal places\",\n      \"code\": \"Digits\"\n    }\n  ],\n  \"timestamp\": \"2026-08-04T02:34:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"VALIDATION_ERROR\",\n  \"correlationId\": \"corr-20260804-0003\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Duplicate Account Number",
+          "request": {
+            "method": "POST",
+            "description": "Attempts to create a second customer with an existing account number. Expected result: 409 Conflict and DUPLICATE_ACCOUNT.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-004"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-004\",\n  \"customerName\": \"Alice Clone\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-004\",\n  \"transactionAmount\": 500.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Duplicate Account",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-004"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-004\",\n  \"customerName\": \"Alice Clone\",\n  \"accountNumber\": \"ACC001\",\n  \"transactionReference\": \"TXN-004\",\n  \"transactionAmount\": 500.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Account number already exists\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:35:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"DUPLICATE_ACCOUNT\",\n  \"correlationId\": \"corr-20260804-0004\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Duplicate Transaction Reference",
+          "request": {
+            "method": "POST",
+            "description": "Attempts to reuse an existing funding transaction reference. Expected result: 409 Conflict and DUPLICATE_TRANSACTION_REFERENCE.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-005"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-005\",\n  \"customerName\": \"Bob Clone\",\n  \"accountNumber\": \"ACC005\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 1000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Duplicate Transaction Reference",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-005"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-005\",\n  \"customerName\": \"Bob Clone\",\n  \"accountNumber\": \"ACC005\",\n  \"transactionReference\": \"TXN-001\",\n  \"transactionAmount\": 1000.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Transaction reference already exists\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:36:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"DUPLICATE_TRANSACTION_REFERENCE\",\n  \"correlationId\": \"corr-20260804-0005\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid Account Number",
+          "request": {
+            "method": "POST",
+            "description": "Sends an account number that violates the 3-20 alphanumeric rule. Expected result: 400 Bad Request and VALIDATION_ERROR.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-customer-003"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-003\",\n  \"customerName\": \"Mallory\",\n  \"accountNumber\": \"ACC-003\",\n  \"transactionReference\": \"TXN-003\",\n  \"transactionAmount\": 100.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Invalid Account Number",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-customer-003"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"CUST-003\",\n  \"customerName\": \"Mallory\",\n  \"accountNumber\": \"ACC-003\",\n  \"transactionReference\": \"TXN-003\",\n  \"transactionAmount\": 100.00\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"field\": \"accountNumber\",\n      \"message\": \"Account number must be 3-20 alphanumeric characters\",\n      \"code\": \"Pattern\"\n    }\n  ],\n  \"timestamp\": \"2026-08-04T02:37:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts\",\n  \"errorCode\": \"VALIDATION_ERROR\",\n  \"correlationId\": \"corr-20260804-0006\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Alice Balance",
+          "request": {
+            "method": "GET",
+            "description": "Retrieves the current balance for Alice's account. Expected result: 200 OK.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts/ACC001/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts",
+                "ACC001",
+                "balance"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Balance Retrieved",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts/ACC001/balance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts",
+                    "ACC001",
+                    "balance"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Account balance retrieved successfully\",\n  \"data\": {\n    \"customerId\": \"CUST-001\",\n    \"customerName\": \"Alice\",\n    \"accountNumber\": \"ACC001\",\n    \"currentBalance\": 5000.00,\n    \"asOf\": \"2026-08-04T02:38:00\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:38:00+03:00\",\n  \"path\": \"/api/v1/customer-accounts/ACC001/balance\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Bob Balance",
+          "request": {
+            "method": "GET",
+            "description": "Retrieves the current balance for Bob's account. Expected result: 200 OK.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customer-accounts/ACC002/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customer-accounts",
+                "ACC002",
+                "balance"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Balance Retrieved",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/customer-accounts/ACC002/balance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "customer-accounts",
+                    "ACC002",
+                    "balance"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Account balance retrieved successfully\",\n  \"data\": {\n    \"customerId\": \"CUST-002\",\n    \"customerName\": \"Bob\",\n    \"accountNumber\": \"ACC002\",\n    \"currentBalance\": 2000.00,\n    \"asOf\": \"2026-08-04T02:38:30\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:38:30+03:00\",\n  \"path\": \"/api/v1/customer-accounts/ACC002/balance\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fund Transfers",
+      "description": "Endpoints for transferring funds between persisted customer accounts. POST requests require Idempotency-Key and return the shared API response envelope.",
+      "item": [
+        {
+          "name": "Transfer Funds",
+          "request": {
+            "method": "POST",
+            "description": "Transfers funds from ACC001 to ACC002. Expected result: 201 Created.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "201 Transfer Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-001\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Transfer completed successfully\",\n  \"data\": {\n    \"transferReference\": \"TRF-001\",\n    \"sourceAccountNumber\": \"ACC001\",\n    \"destinationAccountNumber\": \"ACC002\",\n    \"amount\": 1000.00,\n    \"sourceBalanceAfterTransfer\": 4000.00,\n    \"destinationBalanceAfterTransfer\": 3000.00,\n    \"status\": \"SUCCESS\",\n    \"createdAt\": \"2026-08-04T02:39:00\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:39:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Replay Same Transfer",
+          "request": {
+            "method": "POST",
+            "description": "Replays the same normalized transfer with the same Idempotency-Key. Expected result: 200 OK with the original transfer payload.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \" acc001 \",\n  \"destinationAccountNumber\": \" acc002 \",\n  \"amount\": 1000.0,\n  \"transferReference\": \" trf-001 \"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Transfer Replay",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \" acc001 \",\n  \"destinationAccountNumber\": \" acc002 \",\n  \"amount\": 1000.0,\n  \"transferReference\": \" trf-001 \"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Funds transfer already processed for this idempotency key\",\n  \"data\": {\n    \"transferReference\": \"TRF-001\",\n    \"sourceAccountNumber\": \"ACC001\",\n    \"destinationAccountNumber\": \"ACC002\",\n    \"amount\": 1000.00,\n    \"sourceBalanceAfterTransfer\": 4000.00,\n    \"destinationBalanceAfterTransfer\": 3000.00,\n    \"status\": \"SUCCESS\",\n    \"createdAt\": \"2026-08-04T02:39:00\"\n  },\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:40:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reuse Key With Different Payload",
+          "request": {
+            "method": "POST",
+            "description": "Reuses a transfer Idempotency-Key with a different payload. Expected result: 409 Conflict and IDEMPOTENCY_KEY_CONFLICT.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 500.00,\n  \"transferReference\": \"TRF-003\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Idempotency Conflict",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-001"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 500.00,\n  \"transferReference\": \"TRF-003\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Idempotency key has already been used with a different request payload\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:41:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"IDEMPOTENCY_KEY_CONFLICT\",\n  \"correlationId\": \"corr-20260804-0007\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Missing Idempotency Key",
+          "request": {
+            "method": "POST",
+            "description": "Omits the required Idempotency-Key header. Expected result: 400 Bad Request and MISSING_IDEMPOTENCY_KEY.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-005\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Missing Idempotency Key",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-005\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Idempotency-Key header is required\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:42:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"MISSING_IDEMPOTENCY_KEY\",\n  \"correlationId\": \"corr-20260804-0008\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Overscale Transfer Amount",
+          "request": {
+            "method": "POST",
+            "description": "Sends a transfer amount with more than 2 decimal places. Expected result: 400 Bad Request and VALIDATION_ERROR.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-scale"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 10.999,\n  \"transferReference\": \"TRF-SCALE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "400 Transfer Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-scale"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 10.999,\n  \"transferReference\": \"TRF-SCALE\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": [\n    {\n      \"field\": \"amount\",\n      \"message\": \"Amount must have at most 2 decimal places\",\n      \"code\": \"Digits\"\n    }\n  ],\n  \"timestamp\": \"2026-08-04T02:43:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"VALIDATION_ERROR\",\n  \"correlationId\": \"corr-20260804-0009\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Duplicate Transfer Reference",
+          "request": {
+            "method": "POST",
+            "description": "Attempts to create a new transfer using an existing business transfer reference. Expected result: 409 Conflict and DUPLICATE_TRANSFER_REFERENCE.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-002"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 500.00,\n  \"transferReference\": \"TRF-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "409 Duplicate Transfer Reference",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-002"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 500.00,\n  \"transferReference\": \"TRF-001\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Transfer reference already exists\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:44:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"DUPLICATE_TRANSFER_REFERENCE\",\n  \"correlationId\": \"corr-20260804-0010\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Insufficient Funds Transfer",
+          "request": {
+            "method": "POST",
+            "description": "Attempts a transfer that exceeds the source balance. Expected result: 422 Unprocessable Entity and INSUFFICIENT_FUNDS.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-004"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 6000.00,\n  \"transferReference\": \"TRF-002\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "422 Insufficient Funds",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-004"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC001\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 6000.00,\n  \"transferReference\": \"TRF-002\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Insufficient funds in source account\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:45:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"INSUFFICIENT_FUNDS\",\n  \"correlationId\": \"corr-20260804-0011\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Missing Source Account",
+          "request": {
+            "method": "POST",
+            "description": "Attempts to transfer from an account that does not exist. Expected result: 404 Not Found and ACCOUNT_NOT_FOUND.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "idem-transfer-006"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountNumber\": \"ACC999\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-008\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transfers"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "404 Missing Account",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "idem-transfer-006"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceAccountNumber\": \"ACC999\",\n  \"destinationAccountNumber\": \"ACC002\",\n  \"amount\": 1000.00,\n  \"transferReference\": \"TRF-008\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/transfers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "transfers"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Source account not found\",\n  \"errors\": null,\n  \"timestamp\": \"2026-08-04T02:46:00+03:00\",\n  \"path\": \"/api/v1/transfers\",\n  \"errorCode\": \"ACCOUNT_NOT_FOUND\",\n  \"correlationId\": \"corr-20260804-0012\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
